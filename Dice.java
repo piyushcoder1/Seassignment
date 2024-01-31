@@ -1,53 +1,47 @@
 import java.util.*;
 
-public class Dice {
-    public static int[] undoom_dice(int[] dieA, int[] dieB) {
-        int totalCombinations = dieA.length * dieB.length;
+public class doomedDice {
+    public static int[][] undoom_dice(int[] dieA, int[] dieB) {
+        int[] newDieA = {1, 1, 2, 2, 3, 3, 4, 4};
+        int[] newDieB = dieB.clone();
+        int[][] matrix = new int[4][6];
+        int[] sumCounts = new int[13];
 
-        Map<Integer, Integer> distribution = new HashMap<>();
-        for (int valA : dieA) {
-            for (int valB : dieB) {
-                int sum = valA + valB;
-                distribution.put(sum, distribution.getOrDefault(sum, 0) + 1);
+        for (int i = 0; i < newDieA.length; i += 2) {
+            for (int j = 0; j < newDieB.length; j++) {
+                matrix[i / 2][j] = newDieA[i] + newDieB[j];
+                sumCounts[matrix[i / 2][j]]++;
             }
         }
 
-        Map<Integer, Double> probabilities = new HashMap<>();
-        for (Map.Entry<Integer, Integer> entry : distribution.entrySet()) {
-            probabilities.put(entry.getKey(), (double) entry.getValue() / totalCombinations);
-        }
-
-        Map<Integer, Integer> desiredDistribution = new HashMap<>();
-        for (int sum : distribution.keySet()) {
-            desiredDistribution.put(sum, (int) Math.round(probabilities.get(sum) * dieA.length));
-        }
-
-        int[] newDieA = new int[dieA.length];
-        for (int i = 0; i < dieA.length; i++) {
-            int count = desiredDistribution.getOrDefault(dieA[i], 0);
-            if (count > 4) {
-                newDieA[i] = dieA[i] - (count - 4);
-            } else {
-                newDieA[i] = dieA[i];
+        for (int i = 0; i < newDieA.length; i += 2) {
+            for (int j = 0; j < Math.min(newDieB.length, matrix[i / 2].length); j++) {
+                matrix[i / 2][j] = newDieA[i] + newDieB[j];
+                sumCounts[matrix[i / 2][j]]++;
             }
         }
+        
 
-        return newDieA;
+        double total = 0;
+        for (int i = 2; i < sumCounts.length; i++) {
+            total += sumCounts[i];
+        }
+
+        for (int i = 2; i < sumCounts.length; i++) {
+            sumCounts[i] = (int) Math.round(sumCounts[i] / total * 36);
+        }
+
+        System.out.println("\nProbabilities of sums with undoom:");
+        for (int i = 2; i < sumCounts.length; i++) {
+            System.out.printf("P(Sum = %d) = %d%n", i, sumCounts[i]);
+        }
+
+        return matrix;
     }
+
     public static void main(String[] args) {
         int[] dieA = {1, 2, 3, 4, 5, 6};
         int[] dieB = {1, 2, 3, 4, 5, 6};
-
-        int[] newDieA = undoom_dice(dieA, dieB);
-        int[] newDieB = dieB;
-
-        System.out.println("New Die A:");
-        for (int val : newDieA) {
-            System.out.print(val + " ");
-        }
-        System.out.println("\nNew Die B (unchanged):");
-        for (int val : newDieB) {
-            System.out.print(val + " ");
-        }
+        int[][] matrix = undoom_dice(dieA, dieB);
     }
 }
